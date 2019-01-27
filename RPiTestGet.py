@@ -24,42 +24,41 @@ lastcheckin = time.time() - 30
 # setup polling interval
 checkininterval = checkinintervalnormal
 
-# setup states for tracking
-currentlyrecording = False
-readytostartrecording = False
+# Setup photo location list
+racerphotosloc = ["one", "two", "three"]
 
-try:
-    while True:
-        curTime = time.time()
-        #is it time to check in?
-        if curTime - lastcheckin > checkininterval:
-            #Time to check - let's do this
-            racerparams = {'poll.now-racing', 'row-height':100}
-            print(racerparams)
-            r = requests.get(url = replayurl, data = racerparams)
-            print(r.url)
-            #Check we got a valid response
-            if r.status_code == requests.codes.ok:
-                # Reset checkin time
-                lastcheckin = curTime
+while True:
+    curTime = time.time()
+    #is it time to check in?
+    if curTime - lastcheckin > checkininterval:
+        #Time to check - let's do this
+        racerparams = {'query':"poll.now-racing", 'row-height':"100"}
+        print(racerparams)
+        r = requests.get(url = replayurl, params = racerparams)
+        print(r.url)
+        #Check we got a valid response
+        if r.status_code == requests.codes.ok:
+            # Reset checkin time
+            lastcheckin = curTime
 
-                #Look for the data
-                print (r.content)
-                tree = ElementTree.fromstring(r.content)
-                for current-heat in root.iter("current-heat"):
-                    print ("Den =",current-heat.text)
-                    print ("Race =",current-heat.attrib["round"])
-                    print ("Heat",current-heat.attrib["heat"],"of",current-heat.attrib["number-of-heats"])
-                for racers in root.iter("racer"):
-                    print ("Name:",racer.attrib["name"])
-                    print ("Car:",racer.attrib["carname"])
-                    print ("Number:",racer.attrib["carnumber"])
-                    print ("Lane:",racer.attrib["lane"])
-                    print ("Photo located:",racer.attrib["photo"])
-                    print ("Finish Time:",racer.attrib["finishtime"])
-                    racerphotosloc[racer.attrib["lane"]-1] = racer.attrib["photo"]
+            #Look for the data
+            print(r.content)
+            tree = ElementTree.fromstring(r.content)
+            for currentheat in tree.iter("current-heat"):
+                print("Den =",currentheat.text)
+                print("Race =",currentheat.attrib["round"])
+                print("Heat",currentheat.attrib["heat"],"of",currentheat.attrib["number-of-heats"])
+            for racer in tree.iter("racer"):
+                print("Name:",racer.attrib["name"])
+                print("Car:",racer.attrib["carname"])
+                print("Number:",racer.attrib["carnumber"])
+                print("Lane:",racer.attrib["lane"])
+                print("Photo located:",racer.attrib["photo"])
+                print("Finish Time:",racer.attrib["finishtime"])
+                print("Index:",int(racer.attrib["lane"])-1)
+                racerphotosloc[int(racer.attrib["lane"])-1] = racer.attrib["photo"]
 
-                #Get the photos
-                for num, photoloc in enumerate(racerphotosloc, start=1):
-                    print ("Racer#",num,":",photoloc)
-finally:
+            #Get the photos
+            print(racerphotosloc)
+            for num, photoloc in enumerate(racerphotosloc, start=1):
+                print("Racer#",num,":",photoloc)
