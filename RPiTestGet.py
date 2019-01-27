@@ -51,19 +51,18 @@ while True:
             for racer in tree.iter("racer"):
                 racerindex = int(racer.attrib["lane"])-1
                 racerinfo[racerindex] = [racer.attrib["name"], racer.attrib["carname"], racer.attrib["carnumber"], racer.attrib["lane"], racer.attrib["photo"] ]
-                racerphotosloc[int(racer.attrib["lane"])-1] = racer.attrib["photo"]
 
             #Get the photos
+            racerphotosloc = [racerinfo[0][4], racerinfo[1][4], racerinfo[2][4] ]
             print(raceinfo)
-            print(racerinfo[0])
-            print(racerinfo[1])
-            print(racerinfo[2])
+            print(racerinfo[0][0])
+            print(racerinfo[1][0])
+            print(racerinfo[2][0])
             print(racerphotosloc)
             for num, photoloc in enumerate(racerphotosloc, start=1):
-                print("Racer#",num,":",photoloc)
-                imgurl = derbynetserverIP + "/derbynet/" + photoloc
+                imgurl = derbynetserverIP + "/" + photoloc
                 imgresponse = requests.get(imgurl)
                 if imgresponse.status_code == requests.codes.ok:
-                    racerimgname = "racer" + num + ".jpg"
+                    racerimgname = "racer" + str(num) + ".jpg"
                     with open(racerimgname, 'wb') as f:
                         f.write(imgresponse.content)
