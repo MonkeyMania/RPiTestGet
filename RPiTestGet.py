@@ -24,7 +24,9 @@ lastcheckin = time.time() - 30
 # setup polling interval
 checkininterval = checkinintervalnormal
 
-# Setup photo location list
+# Setup lists
+raceinfo = ["Den", "Race", "Heat", "Total Heats"]
+racerinfo = [ ["Name", "Car", "Number", "Lane", "Photo Location"], ["Name", "Car", "Number", "Lane", "Photo Location"], ["Name", "Car", "Number", "Lane", "Photo Location"] ]
 racerphotosloc = ["one", "two", "three"]
 
 while True:
@@ -32,7 +34,7 @@ while True:
     #is it time to check in?
     if curTime - lastcheckin > checkininterval:
         #Time to check - let's do this
-        racerparams = {'query':"poll.now-racing", 'row-height':"100"}
+        racerparams = {'query':"poll.now-racing", 'row-height':"150"}
         print(racerparams)
         r = requests.get(url = replayurl, params = racerparams)
         print(r.url)
@@ -45,20 +47,23 @@ while True:
             print(r.content)
             tree = ElementTree.fromstring(r.content)
             for currentheat in tree.iter("current-heat"):
-                print("Den =",currentheat.text)
-                print("Race =",currentheat.attrib["round"])
-                print("Heat",currentheat.attrib["heat"],"of",currentheat.attrib["number-of-heats"])
+                raceinfo = [currentheat.text, currentheat.attrib["round"], currentheat.attrib["heat"], currentheat.attrib["number-of-heats"] ]
             for racer in tree.iter("racer"):
-                print("Name:",racer.attrib["name"])
-                print("Car:",racer.attrib["carname"])
-                print("Number:",racer.attrib["carnumber"])
-                print("Lane:",racer.attrib["lane"])
-                print("Photo located:",racer.attrib["photo"])
-                print("Finish Time:",racer.attrib["finishtime"])
-                print("Index:",int(racer.attrib["lane"])-1)
+                racerindex = int(racer.attrib["lane"])-1
+                racerinfo[racerindex] = [racer.attrib["name"], racer.attrib["carname"], racer.attrib["carnumber"], racer.attrib["lane"], racer.attrib["photo"] ]
                 racerphotosloc[int(racer.attrib["lane"])-1] = racer.attrib["photo"]
 
             #Get the photos
+            print(raceinfo)
+            print(racerinfo[0])
+            print(racerinfo[1])
+            print(racerinfo[2])
             print(racerphotosloc)
             for num, photoloc in enumerate(racerphotosloc, start=1):
                 print("Racer#",num,":",photoloc)
+                imgurl = derbynetserverIP + "/derbynet/" + photoloc
+                imgresponse = requests.get(imgurl)
+                if imgresponse.status_code == requests.codes.ok:
+                    racerimgname = "racer" + num + ".jpg"
+                    with open(racerimgname, 'wb') as f:
+                        f.write(imgresponse.content)
